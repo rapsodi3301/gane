@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+
+<html lang="en" class="scroll-smooth">
+<head>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/1GM2vHxR/image.png">
+    <link rel="shortcut icon" type="image/png" href="https://i.ibb.co/1GM2vHxR/image.png">
+    <meta property="og:title" content="Valthorin — The Lost Kingdom">
+    <meta property="og:description" content="Valthorin is a dark fantasy Metroidvania where you explore a seamless interconnected world, challenge corrupted gods, and reclaim your lost essence. Master ancient abilities, uncover forgotten lore, and survive the abyss beneath Aethos.">
+    <meta property="og:type" content="website">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valthorin | The Lost Kingdom</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        display: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#FF4400',
+                            dim: '#cc3700',
+                            dark: '#050505',
+                            surface: '#0A0A0A',
+                            border: '#1F1F1F'
+                        }
+                    },
+                    backgroundImage: {
+                        'noise': "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\" opacity=\"0.05\"/%3E%3C/svg%3E')",
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'marquee': 'marquee 25s linear infinite',
+                        'pulse-glow': 'pulseGlow 3s infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+                        marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-100%)' } },
+                        pulseGlow: { '0%, 100%': { boxShadow: '0 0 20px rgba(255, 68, 0, 0.2)' }, '50%': { boxShadow: '0 0 40px rgba(255, 68, 0, 0.5)' } }
+                    }
+                }
+            }
+        }
+        
+    </script>
+
+    <style>
+        /* --- GLOBAL CURSOR RESET --- */
+        /* Force hide the default cursor on EVERYTHING to prevent it from flickering */
+        * {
+            cursor: none !important;
+        }
+
+        /* Custom Base Styles */
+        body {
+            background-color: #050505;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+
+        /* --- CUSTOM CURSOR STYLES --- */
+        #cursor-dot {
+            width: 8px; height: 8px; 
+            background-color: #FF4400;
+            position: fixed; 
+            top: 0; left: 0; 
+            border-radius: 50%;
+            z-index: 9999; 
+            pointer-events: none; 
+            /* Smooth transitions for all state changes */
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        background-color 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        width 0.3s ease-out,
+                        height 0.3s ease-out;
+        }
+
+        #cursor-ring {
+            width: 40px; height: 40px; 
+            border: 1px solid rgba(255, 68, 0, 0.5);
+            position: fixed; 
+            top: 0; left: 0; 
+            border-radius: 50%;
+            z-index: 9998; 
+            pointer-events: none;
+            /* Smooth transitions with elastic easing */
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        background-color 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        border-color 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        backdrop-filter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+
+        /* Hover State: When body has class 'is-hovering' */
+        body.is-hovering #cursor-ring {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(255, 68, 0, 0.15);
+            border-color: transparent;
+            backdrop-filter: blur(2px);
+            mix-blend-mode: screen; /* Cool effect on dark backgrounds */
+        }
+
+        body.is-hovering #cursor-dot {
+            background-color: #ffffff;
+            transform: scale(0.6); /* Shrink the dot slightly to focus */
+        }
+
+        /* Click State: When mouse is down */
+        body.is-clicking #cursor-ring {
+            border-color: #FF4400;
+        }
+
+
+/* Ultra-smooth hover animation for feature cards */
+.tilt-card {
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), 
+                box-shadow 0.4s ease;
+}
+
+.tilt-card img {
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), 
+                opacity 0.8s ease;
+}
+
+/* Hover scale'i daha yumuşak olsun, çok agresif büyümesin */
+.tilt-card:hover img {
+    transform: scale(1.04);
+}
+
+
+        /* Fallback for touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            #cursor-dot, #cursor-ring { display: none !important; }
+            * { cursor: auto !important; }
+        }
+
+        /* Utilities */
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .text-stroke {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+            color: transparent;
+        }
+
+        .clip-diagonal {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+        }
+
+        /* Scroll Reveal Animation Classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glitch Effect on Hover */
+        .glitch-hover { position: relative; overflow: hidden; }
+        .glitch-hover::before {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; color: #FF4400;
+            transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.7, 0, 0.3, 1);
+            z-index: 1; display: flex; align-items: center; justify-content: center;
+        }
+        .glitch-hover:hover::before { transform: translateX(0); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF4400; }
+        
+        /* Tilt Effect */
+        .tilt-card { transform-style: preserve-3d; transform: perspective(1000px); }
+        .tilt-inner { transform: translateZ(20px); }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand selection:text-white">
+
+    <!-- Preloader -->
+    <div id="preloader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-brand/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-brand rounded-full border-t-transparent animate-spin"></div>
+            <i class="fa-solid fa-dungeon absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl text-brand"></i>
+        </div>
+        <div class="text-brand font-mono text-sm tracking-[0.3em] animate-pulse">LOADING...</div>
+    </div>
+
+    <!-- Custom Cursor Elements -->
+    <div id="cursor-dot" class="hidden md:block"></div>
+    <div id="cursor-ring" class="hidden md:block"></div>
+
+    <!-- Noise Overlay -->
+    <div class="fixed inset-0 bg-noise pointer-events-none z-40 opacity-30 mix-blend-overlay"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-6 border-b border-transparent">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-3 group interactive">
+                <i class="fa-solid fa-dragon text-3xl text-brand transition-transform duration-500 group-hover:rotate-180"></i>
+                <div class="flex flex-col">
+                    <span class="font-display font-bold text-xl tracking-widest text-white leading-none">Valthorin</span>
+                    <span class="text-[0.6rem] text-brand tracking-[0.4em] uppercase leading-none">The Lost Kingdom</span>
+                </div>
+            </a>
+
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-10">
+                <a href="#about" class="text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white transition-colors py-2 relative group interactive">
+                    LORE
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-brand transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#features" class="text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white transition-colors py-2 relative group interactive">
+                    FEATURES
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-brand transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#trailer" class="text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white transition-colors py-2 relative group interactive">
+                    TRAILER
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-brand transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#gallery" class="text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white transition-colors py-2 relative group interactive">
+                    MEDIA
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-brand transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#faq" class="text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white transition-colors py-2 relative group interactive">
+                    FAQ
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-brand transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </div>
+
+            <!-- CTA -->
+            <div class="flex items-center gap-4">
+<a href="#download"
+   class="hidden md:flex interactive relative px-6 py-2.5 bg-white text-black font-bold text-xs tracking-widest uppercase overflow-hidden group clip-diagonal hover:bg-brand transition-colors duration-300">
+    <span class="relative z-10">Play</span>
+</a>
+
+                <button id="mobile-menu-toggle" class="md:hidden text-white text-2xl interactive">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/95 backdrop-blur-xl z-40 transform translate-x-full transition-transform duration-500 flex flex-col justify-center items-center space-y-8">
+        <button id="close-menu" class="absolute top-8 right-8 text-3xl text-gray-400 hover:text-white interactive"><i class="fa-solid fa-times"></i></button>
+        <a href="#about" class="mobile-link text-3xl font-display text-white hover:text-brand interactive">THE LORE</a>
+        <a href="#features" class="mobile-link text-3xl font-display text-white hover:text-brand interactive">FEATURES</a>
+        <a href="#gallery" class="mobile-link text-3xl font-display text-white hover:text-brand interactive">GALLERY</a>
+        <a href="javascript:void(0)" onclick="openDownloadModal()" class="mobile-link text-3xl font-display text-brand interactive">Play</a>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background Image with Parallax -->
+        <div class="absolute inset-0 z-0">
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-transform duration-100 ease-out scale-110" 
+                 style="background-image: url('https://i.ibb.co/xtv2M6Q6/chrome-WG7vn0-M0-Cq.jpg');">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/30 via-brand-dark/60 to-brand-dark"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_90%)]"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="container mx-auto px-6 relative z-10 text-center flex flex-col items-center">
+            <div class="mb-4 overflow-hidden">
+                <div class="reveal active animate-float">
+                    <span class="text-brand font-bold tracking-[0.5em] text-xs uppercase inline-block border border-brand/30 px-4 py-1 rounded-full bg-brand/5 backdrop-blur-sm">
+                        Available Now in Early Access
+                    </span>
+                </div>
+            </div>
+            
+            <h1 class="text-6xl md:text-8xl lg:text-[9rem] leading-none font-display font-black text-white mb-6 tracking-tighter mix-blend-overlay opacity-90 select-none">
+                Valthorin
+            </h1>
+            
+            <p class="text-gray-300 max-w-xl mx-auto mb-10 text-base md:text-lg font-light leading-relaxed reveal" style="transition-delay: 200ms;">
+                Shatter the cycle of the corrupted gods. Explore a seamless ruined world, master ancient arts, and reclaim your lost essence in this non-linear action RPG.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-center reveal" style="transition-delay: 400ms;">
+                <a href="javascript:void(0)" onclick="openDownloadModal()" class="interactive group relative w-56 h-14 bg-brand clip-diagonal flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,68,0,0.3)] hover:shadow-[0_0_50px_rgba(255,68,0,0.6)] transition-all duration-300">
+                    <span class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></span>
+                    <span class="relative z-10 font-bold uppercase tracking-widest text-black group-hover:text-black transition-colors flex items-center gap-2">
+                        <i class="fa-brands fa-windows"></i>Download
+                    </span>
+                </a>
+                
+                <!-- Watch Trailer Button - Linked to #trailer section -->
+                <a href="#trailer" class="interactive group flex items-center gap-3 text-white hover:text-brand transition-colors px-6 py-4">
+                    <div class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-brand group-hover:scale-110 transition-all bg-white/5 backdrop-blur-sm">
+                        <i class="fa-solid fa-play text-xs ml-1"></i>
+                    </div>
+                    <span class="text-sm font-bold tracking-widest uppercase border-b border-transparent group-hover:border-brand transition-all">Watch Trailer</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 animate-bounce">
+            <span class="text-[0.6rem] uppercase tracking-widest">Scroll</span>
+            <i class="fa-solid fa-chevron-down text-brand"></i>
+        </div>
+    </header>
+
+    <!-- Marquee -->
+    <div class="w-full bg-brand py-3 overflow-hidden -rotate-1 border-y-4 border-black z-20 relative shadow-2xl">
+        <div class="flex animate-marquee whitespace-nowrap">
+            <span class="text-black font-display font-black text-2xl mx-6 tracking-widest flex items-center gap-4">EXPLORE THE UNKNOWN <i class="fa-solid fa-star text-xs"></i> DEFEAT THE CORRUPTED <i class="fa-solid fa-star text-xs"></i> RECLAIM YOUR SOUL <i class="fa-solid fa-star text-xs"></i></span>
+            <span class="text-black font-display font-black text-2xl mx-6 tracking-widest flex items-center gap-4">EXPLORE THE UNKNOWN <i class="fa-solid fa-star text-xs"></i> DEFEAT THE CORRUPTED <i class="fa-solid fa-star text-xs"></i> RECLAIM YOUR SOUL <i class="fa-solid fa-star text-xs"></i></span>
+            <span class="text-black font-display font-black text-2xl mx-6 tracking-widest flex items-center gap-4">EXPLORE THE UNKNOWN <i class="fa-solid fa-star text-xs"></i> DEFEAT THE CORRUPTED <i class="fa-solid fa-star text-xs"></i> RECLAIM YOUR SOUL <i class="fa-solid fa-star text-xs"></i></span>
+            <span class="text-black font-display font-black text-2xl mx-6 tracking-widest flex items-center gap-4">EXPLORE THE UNKNOWN <i class="fa-solid fa-star text-xs"></i> DEFEAT THE CORRUPTED <i class="fa-solid fa-star text-xs"></i> RECLAIM YOUR SOUL <i class="fa-solid fa-star text-xs"></i></span>
+        </div>
+    </div>
+
+    <!-- Lore / About Section -->
+    <section id="about" class="py-32 bg-brand-surface relative overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div class="reveal">
+                <span class="text-brand text-xs font-bold tracking-[0.3em] uppercase block mb-4">The Story</span>
+                <h2 class="text-4xl md:text-5xl font-display text-white mb-6 leading-tight">
+                    Echoes of a <br><span class="text-stroke">Fallen God</span>
+                </h2>
+                <p class="text-gray-400 mb-6 leading-relaxed">
+                    The Kingdom of Aethos was once a beacon of light, fueled by the Eternal Flame. But when the flame turned to ash, the shadows crept in. Now, twisted monstrosities roam the halls where kings once walked.
+                </p>
+                <p class="text-gray-400 mb-8 leading-relaxed">
+                    You are a Vessel—a hollow shell brought to life by a spark of the old flame. Your mission is simple yet impossible: traverse the treacherous abyss, defeat the corrupted guardians, and decide the fate of the world.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-8 border-t border-white/10 pt-8">
+                    <div>
+                        <h4 class="text-3xl font-display text-white mb-1">40+</h4>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider">Unique Enemies</p>
+                    </div>
+                    <div>
+                        <h4 class="text-3xl font-display text-white mb-1">15</h4>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider">Biomes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative reveal delay-200">
+                <div class="absolute inset-0 bg-brand blur-[100px] opacity-20"></div>
+                <div class="relative z-10 rounded-lg overflow-hidden border border-white/10 shadow-2xl rotate-3 transition-transform hover:rotate-0 duration-700">
+                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/11f0165dfe329d8a38fd39eb780cf397e9243022/ss_11f0165dfe329d8a38fd39eb780cf397e9243022.1920x1080.jpg?t=1756331394" alt="Gameplay" class="w-full h-auto">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <p class="font-display text-white text-xl">Abyssal Depths</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Features Bento Grid -->
+    <section id="features" class="py-32 bg-brand-dark relative">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col items-center text-center mb-20 reveal">
+                <h2 class="text-4xl md:text-5xl font-display text-white mb-4">Survive the <span class="text-brand">Abyss</span></h2>
+                <div class="w-24 h-1 bg-brand"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+                <!-- Card 1 -->
+                <div class="md:col-span-2 relative group rounded-2xl overflow-hidden border border-white/10 tilt-card interactive bg-black">
+                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/c1ded5b8b9d227bfee0fc7adac8f1eee0bde6069/ss_c1ded5b8b9d227bfee0fc7adac8f1eee0bde6069.1920x1080.jpg?t=1756331394" alt="Interconnected World" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-8 tilt-inner relative z-10">
+                        <div class="w-12 h-12 bg-brand/20 backdrop-blur-md rounded-lg flex items-center justify-center mb-4 text-brand border border-brand/30">
+                            <i class="fa-solid fa-map text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-display text-white mb-2">Interconnected World</h3>
+                        <p class="text-gray-300 text-sm max-w-md">No loading screens. A massive seamless map filled with shortcuts, secrets, and diverse biomes.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="md:col-span-1 relative group rounded-2xl overflow-hidden border border-white/10 tilt-card interactive bg-black">
+                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/d94efd63b2864467ffe6a7437657ca7b14a1f965/ss_d94efd63b2864467ffe6a7437657ca7b14a1f965.1920x1080.jpg?t=1756331394" alt="Ancient Abilities" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                    <div class="p-8 h-full flex flex-col justify-end tilt-inner z-10 relative">
+                        <i class="fa-solid fa-hand-sparkles text-3xl text-brand mb-4"></i>
+                        <h4 class="text-xl font-bold text-white mb-1">Ancient Abilities</h4>
+                        <p class="text-xs text-gray-300">Unlock movement mechanics like the Shadow Dash and Gravity Flip.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="md:col-span-1 relative group rounded-2xl overflow-hidden border border-white/10 tilt-card interactive bg-black">
+                     <!-- Image fully visible -->
+                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/76a1111af0ec808bdf36bd070e2a9a80e37952a4/ss_76a1111af0ec808bdf36bd070e2a9a80e37952a4.1920x1080.jpg?t=1756331394" alt="Combat" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                    
+                    <div class="p-8 h-full flex flex-col justify-between tilt-inner relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/10">
+                            <i class="fa-solid fa-skull text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-1">Unforgiving Combat</h4>
+                            <p class="text-xs text-gray-300">Learn patterns, parry attacks, and strike when vulnerable.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="md:col-span-2 relative group rounded-2xl overflow-hidden border border-white/10 tilt-card interactive bg-black">
+                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/0e1dedf434ae1325e17d3919734af2119d360552/ss_0e1dedf434ae1325e17d3919734af2119d360552.1920x1080.jpg?t=1756331394" alt="Customization" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
+                    <div class="absolute right-0 bottom-0 p-8 text-right tilt-inner relative z-10">
+                        <span class="text-brand text-xs font-bold tracking-widest mb-2 block">CUSTOMIZATION</span>
+                        <h3 class="text-2xl font-display text-white mb-2">Build Your Playstyle</h3>
+                        <p class="text-gray-300 text-sm max-w-sm ml-auto">Equip charms, upgrade weapons, and unlock skills to face the unique challenges of Aethos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- YouTube Trailer Section -->
+    <section id="trailer" class="py-32 bg-brand-surface relative overflow-hidden scroll-mt-32">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col items-center text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-5xl font-display text-white mb-4">Official <span class="text-brand">Trailer</span></h2>
+                <div class="w-24 h-1 bg-brand"></div>
+                <p class="text-gray-400 text-sm mt-4">Watch the journey unfold</p>
+            </div>
+            
+            <div class="max-w-5xl mx-auto reveal">
+                <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(255,68,0,0.15)] group interactive">
+                    <iframe class="w-full h-full" src="https://streamable.com/e/nnvheg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Gallery -->
+    <section id="gallery" class="py-32 bg-[#030303] relative border-t border-white/5">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 reveal">
+                <div>
+                    <h2 class="text-3xl font-display text-white">Visual <span class="text-brand">Archives</span></h2>
+                    <p class="text-gray-500 text-sm mt-2">Screenshots captured in-engine.</p>
+                </div>
+                <div class="flex gap-4 mt-6 md:mt-0">
+                    <button id="prev-btn" class="w-12 h-12 rounded-full border border-white/10 hover:border-brand hover:bg-brand hover:text-black text-white transition-all flex items-center justify-center interactive"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button id="next-btn" class="w-12 h-12 rounded-full border border-white/10 hover:border-brand hover:bg-brand hover:text-black text-white transition-all flex items-center justify-center interactive"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div class="relative w-full aspect-video md:h-[600px] bg-black border border-white/10 rounded-lg overflow-hidden shadow-2xl reveal group interactive">
+                <div id="gallery-image" class="w-full h-full bg-cover bg-center transition-all duration-500 ease-in-out"></div>
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                    <span id="gallery-idx" class="text-brand font-mono text-xs mb-2 block tracking-widest">01 / 05</span>
+                    <h3 id="gallery-title" class="text-3xl md:text-5xl font-display text-white mb-2">Fungal Caverns</h3>
+                    <p id="gallery-desc" class="text-gray-300 max-w-lg text-sm">A toxic underground network filled with bioluminescent hazards.</p>
+                </div>
+            </div>
+
+            <!-- Thumbs -->
+            <div class="flex gap-4 mt-6 overflow-x-auto pb-4 scrollbar-hide reveal" id="gallery-thumbs"></div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+<section id="faq" class="py-24 bg-brand-surface border-t border-brand-border">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <h2 class="text-3xl font-display text-white mb-12 text-center reveal">Frequently Asked<span class="text-brand"> Questions</span></h2>
+            
+            <div class="space-y-4 reveal">
+                <!-- Item 1 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                    <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">Is there a multiplayer mode in Valthorin?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <p class="px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">Yes, Valthorin supports co-op multiplayer mode. You can play with your friends! :)</p>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                    <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">What are the system requirements?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <p class="px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">Valthorin can run on low-end PCs. Minimum requirements: Windows 10, Intel i3 or equivalent processor, 4 GB RAM, integrated graphics, 1 GB free storage space.</p>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                    <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">Which platforms can I play the game on?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <p class="px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">Currently, Valthorin is only available for Windows PCs. We're working on Mac and Linux support, but no release date has been set yet.</p>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">How long is the game?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <p class="px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">Currently in beta, the game takes approximately 45 minutes to complete. However, the full release will feature a much expanded experience with 8-12 hours for the main story. Completionists looking to find all secrets and abilities can expect 15-20 hours of gameplay.</p>
+                    </div>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                    <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">How can I contact support if I encounter issues?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <p class="px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">You can reach out to our support team via email at support@Valthorin.com. We're here to help with any issues you might face!</p>
+                    </div>
+                </div>
+
+                <!-- Item 6 -->
+                <div class="border border-white/5 bg-white/[0.02] rounded-lg overflow-hidden interactive">
+                    <button class="w-full py-5 px-6 text-left flex justify-between items-center focus:outline-none group faq-btn">
+                        <span class="text-base font-medium text-gray-300 group-hover:text-brand transition-colors font-display">I'm getting a Windows SmartScreen warning, is this file safe?</span>
+                        <span class="text-xl text-gray-500 group-hover:text-brand transition-colors faq-icon">+</span>
+                    </button>
+                    <div class="max-h-0 overflow-hidden transition-all duration-500 faq-content bg-black/30">
+                        <div class="px-6 pb-6 border-t border-white/5 pt-4">
+                            <p class="text-gray-400 text-sm leading-relaxed mb-4">This is a default security feature that pops up when a file isn't digitally signed or comes from an unrecognized source. I can assure you this file is completely safe. You can click "More Info" and "Run Anyway". If you still have questions in your mind, you can scan our file with virustotal or any antivirus you wish.</p>
+                            <img src="https://help.eset.com/epi/4/tr-TR/images/smart_screen.png" alt="SmartScreen Warning" class="w-full rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </section>
+
+    <!-- Download / Footer -->
+    <section id="download" class="pt-40 pb-10 relative bg-black overflow-hidden flex flex-col items-center justify-center">
+        <!-- Background element -->
+        <div class="absolute inset-0 opacity-20 bg-[url('https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/14f43c71c313fc25429c2c9e779eb7889889c1da/ss_14f43c71c313fc25429c2c9e779eb7889889c1da.1920x1080.jpg?t=1756331394')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+
+        <div class="container mx-auto px-6 relative z-10 text-center reveal">
+            <h2 class="text-5xl md:text-7xl font-display text-white mb-12">Begin Your <span class="text-brand">Journey</span></h2>
+            
+            <div class="flex flex-col items-center gap-6">
+                <!-- Decorated Download Button -->
+                <a href="javascript:void(0)" onclick="openDownloadModal()" class="interactive relative group overflow-hidden px-16 py-6 bg-brand text-black font-black uppercase tracking-widest text-xl shadow-[0_0_50px_rgba(255,68,0,0.5)] hover:shadow-[0_0_80px_rgba(255,68,0,0.8)] transition-all duration-300 clip-diagonal transform hover:scale-105">
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <span class="relative z-10 flex items-center gap-3">
+                        <i class="fa-brands fa-windows text-2xl"></i>
+                        Download Beta
+                    </span>
+                </a>
+                <p class="text-gray-500 text-xs tracking-widest uppercase animate-pulse">Version 1.2.4 Available Now</p>
+            </div>
+            
+            <div class="mt-20 flex justify-center gap-12 text-3xl text-gray-500">
+                <a href="https://discord.gg/QHXQhA5M" class="hover:text-brand transition-colors interactive transform hover:scale-125"><i class="fa-brands fa-discord"></i></a>
+                <a href="https://www.youtube.com/watch?v=KGwrpbqEmHU" class="hover:text-brand transition-colors interactive transform hover:scale-125"><i class="fa-brands fa-youtube"></i></a>
+            </div>
+            <p class="mt-8 text-gray-700 text-xs">© 2025 Ahmo Studios. All rights reserved.</p>
+        </div>
+    </section>
+
+    <!-- Download Modal -->
+    <div id="download-modal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" onclick="closeDownloadModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative z-10 bg-[#050505] border border-white/10 p-8 mx-4 w-full max-w-md shadow-[0_0_50px_rgba(255,68,0,0.2)] transform scale-95 transition-transform duration-300 rounded-lg" id="download-modal-content">
+            <button onclick="closeDownloadModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors interactive">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-8">
+                <h3 class="text-3xl font-display text-white mb-2">Select Version</h3>
+                <p class="text-gray-400 text-sm">Choose which version of Valthorin you want to download.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- New Version -->
+                <a href="https://www.dropbox.com/scl/fi/ccig7tyw5vszv1o17zb91/GameSetupV5.2.6.zip?rlkey=9wtm9qr9b3w0zznwrtxcj7ewq&st=wx09yg9x&dl=1" class="block w-full group relative overflow-hidden bg-brand p-5 clip-diagonal interactive hover:scale-[1.02] transition-transform">
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div class="flex flex-col text-left">
+                            <span class="font-black text-black uppercase tracking-widest text-lg">New Version</span>
+                            <span class="text-xs text-black/80 font-bold tracking-wider">V1.2.4 (Latest)</span>
+                        </div>
+                        <i class="fa-solid fa-download text-black text-xl group-hover:animate-bounce"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </a>
+                
+                <!-- Old Version -->
+                <a href="https://www.dropbox.com/scl/fi/ccig7tyw5vszv1o17zb91/GameSetupV5.2.6.zip?rlkey=9wtm9qr9b3w0zznwrtxcj7ewq&st=wx09yg9x&dl=1" class="block w-full group relative overflow-hidden bg-transparent border border-white/20 p-5 hover:border-brand transition-colors interactive">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col text-left">
+                            <span class="font-bold text-white uppercase tracking-widest group-hover:text-brand transition-colors text-lg">Old Version</span>
+                            <span class="text-xs text-gray-500 tracking-wider">V1.0.0 (Old)</span>
+                        </div>
+                        <i class="fa-solid fa-history text-gray-500 group-hover:text-brand transition-colors text-xl"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // --- PRELOADER ---
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            setTimeout(() => {
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.style.display = 'none', 300);
+            }, 400);
+        });
+
+        // --- CUSTOM CURSOR ---
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorRing = document.getElementById('cursor-ring');
+        
+        let mouseX = -100;
+        let mouseY = -100;
+        let ringX = -100;
+        let ringY = -100;
+
+            // --- SCROLL MICRO-DRIFT FIX ---
+    let scrollOffset = 0;
+
+
+
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Direct movement for dot
+            cursorDot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
+        });
+
+        // Click State Logic
+        document.addEventListener('mousedown', () => {
+            document.body.classList.add('is-clicking');
+        });
+        document.addEventListener('mouseup', () => {
+            document.body.classList.remove('is-clicking');
+        });
+
+        // Animation Loop
+        function animateCursor() {
+            // Lerp for ring
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            
+            // Center the ring (20px is half of base 40px size, but we use translate(-50%, -50%) in specific overrides, so here we stick to top-left coords)
+            // To make resizing smooth, we position top/left and use transform for offset in the CSS, 
+            // but for raw tracking we need exact coordinates.
+            // Let's stick to the previous transform method but centered.
+            
+            cursorRing.style.transform = `translate(${ringX - 20}px, ${ringY - 20}px)`;
+            
+            // If Hovering or Clicking, we let CSS handle the scale/transform logic via classes, 
+            // but we still need to update X/Y.
+            // To avoid fighting CSS transforms, we apply the position to top/left or use matrix.
+            // For simplicity in this vanilla setup, we'll keep updating transform, but handle scale in CSS.
+            // NOTE: This overrides CSS transform scale, so we adjust slightly:
+            
+            if (document.body.classList.contains('is-hovering')) {
+                // If hovering, the ring is 70px (offset -35)
+                cursorRing.style.transform = `translate(${ringX - 35}px, ${ringY - 35}px)`;
+            } else if (document.body.classList.contains('is-clicking')) {
+                 cursorRing.style.transform = `translate(${ringX - 20}px, ${ringY - 20}px) scale(0.9)`;
+            } else {
+                 cursorRing.style.transform = `translate(${ringX - 20}px, ${ringY - 20}px)`;
+            }
+
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // --- DYNAMIC HOVER LISTENERS ---
+        // We select ALL standard interactive elements plus the custom .interactive class
+        // This ensures the cursor works on standard HTML elements without manually adding classes.
+        const selectors = 'a, button, input, textarea, select, details, summary, .interactive, [role="button"]';
+        
+        function updateHoverListeners() {
+            const clickables = document.querySelectorAll(selectors);
+            clickables.forEach(el => {
+                // prevent multiple listeners
+                if(el.dataset.cursorAttached) return; 
+                el.dataset.cursorAttached = "true";
+
+                el.addEventListener('mouseenter', () => document.body.classList.add('is-hovering'));
+                el.addEventListener('mouseleave', () => document.body.classList.remove('is-hovering'));
+            });
+        }
+        
+        updateHoverListeners();
+        // Re-run occasionally for dynamic content if needed, or MutationObserver (skipped for this static page)
+
+        // --- SCROLL REVEAL ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // --- PARALLAX HERO ---
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            const heroBg = document.getElementById('hero-bg');
+            if (scrolled < window.innerHeight) {
+                heroBg.style.transform = `translateY(${scrolled * 0.5}px) scale(1.1)`;
+            }
+            
+            // Navbar Glass
+            const navbar = document.getElementById('navbar');
+            if (scrolled > 50) {
+                navbar.classList.add('glass-panel', 'py-3');
+                navbar.classList.remove('py-6', 'border-transparent');
+            } else {
+                navbar.classList.remove('glass-panel', 'py-3');
+                navbar.classList.add('py-6', 'border-transparent');
+            }
+        });
+
+        // --- TILT EFFECT ---
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -3; // Max 5 deg
+                const rotateY = ((x - centerX) / centerX) * 3;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+card.addEventListener('mouseleave', () => {
+    card.style.transition = "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)";
+    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+});
+
+        });
+
+        // --- GALLERY ---
+        const galleryData = [
+            { src: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/01261a80ac43b505d6604ef0e8723c4cca08878f/ss_01261a80ac43b505d6604ef0e8723c4cca08878f.1920x1080.jpg?t=1756331394', title: 'Fungal Caverns', desc: 'A toxic underground network filled with bioluminescent hazards.' },
+            { src: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/a65c38635b78f94cd8a425e6f14560d5311bb906/ss_a65c38635b78f94cd8a425e6f14560d5311bb906.1920x1080.jpg?t=1756331394', title: 'Crystal Peak', desc: 'High altitude platforming challenges amidst singing crystals.' },
+            { src: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/76a1111af0ec808bdf36bd070e2a9a80e37952a4/ss_76a1111af0ec808bdf36bd070e2a9a80e37952a4.1920x1080.jpg?t=1756331394', title: 'Ancient Archives', desc: 'Forbidden knowledge guarded by the restless dead.' },
+            { src: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/cb4b488870fbbed93c5effb18456bed045025ea2/ss_cb4b488870fbbed93c5effb18456bed045025ea2.1920x1080.jpg?t=1756331394', title: 'Shadow Realm', desc: 'Where reality breaks and the void takes hold.' },
+            { src: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2710920/11f0165dfe329d8a38fd39eb780cf397e9243022/ss_11f0165dfe329d8a38fd39eb780cf397e9243022.1920x1080.jpg?t=1756331394', title: 'Abyssal Depths', desc: 'Craft weapons from the essence of your enemies.' }
+        ];
+
+        let currentIdx = 0;
+        const mainImage = document.getElementById('gallery-image');
+        const titleEl = document.getElementById('gallery-title');
+        const descEl = document.getElementById('gallery-desc');
+        const idxEl = document.getElementById('gallery-idx');
+        const thumbsContainer = document.getElementById('gallery-thumbs');
+
+        // Init Gallery
+        function updateGallery() {
+            const data = galleryData[currentIdx];
+            mainImage.style.backgroundImage = `url('${data.src}')`;
+            titleEl.innerText = data.title;
+            descEl.innerText = data.desc;
+            idxEl.innerText = `0${currentIdx + 1} / 0${galleryData.length}`;
+            
+            // Update thumbs
+            document.querySelectorAll('.gallery-thumb').forEach((t, i) => {
+                if (i === currentIdx) {
+                    t.classList.add('border-brand', 'opacity-100');
+                    t.classList.remove('border-transparent', 'opacity-50');
+                } else {
+                    t.classList.remove('border-brand', 'opacity-100');
+                    t.classList.add('border-transparent', 'opacity-50');
+                }
+            });
+        }
+
+        // Render Thumbs
+        galleryData.forEach((item, index) => {
+            const thumb = document.createElement('div');
+            thumb.className = `gallery-thumb min-w-[120px] h-[70px] cursor-pointer border-2 rounded-md overflow-hidden transition-all interactive ${index === 0 ? 'border-brand opacity-100' : 'border-transparent opacity-50'}`;
+            thumb.innerHTML = `<img src="${item.src}" class="w-full h-full object-cover">`;
+            thumb.onclick = () => { currentIdx = index; updateGallery(); };
+            thumbsContainer.appendChild(thumb);
+        });
+        
+        // Initial load
+        updateGallery();
+
+        document.getElementById('next-btn').onclick = () => {
+            currentIdx = (currentIdx + 1) % galleryData.length;
+            updateGallery();
+        };
+        document.getElementById('prev-btn').onclick = () => {
+            currentIdx = (currentIdx - 1 + galleryData.length) % galleryData.length;
+            updateGallery();
+        };
+
+        // --- MOBILE MENU ---
+        const menuBtn = document.getElementById('mobile-menu-toggle');
+        const closeMenu = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('translate-x-full');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        menuBtn.onclick = toggleMenu;
+        closeMenu.onclick = toggleMenu;
+        mobileLinks.forEach(l => l.onclick = toggleMenu);
+
+        // --- FAQ ---
+        document.querySelectorAll('.faq-btn').forEach(btn => {
+            btn.onclick = () => {
+                const content = btn.nextElementSibling;
+                const icon = btn.querySelector('.faq-icon');
+                
+                // Close others
+                document.querySelectorAll('.faq-content').forEach(c => {
+                    if (c !== content) c.style.maxHeight = null;
+                });
+                document.querySelectorAll('.faq-icon').forEach(i => {
+                    if (i !== icon) i.innerText = '+';
+                });
+
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    icon.innerText = '+';
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.innerText = '-';
+                }
+            };
+        });
+
+        // --- DOWNLOAD MODAL LOGIC ---
+        function openDownloadModal() {
+            const modal = document.getElementById('download-modal');
+            const content = document.getElementById('download-modal-content');
+            modal.classList.remove('hidden');
+            // Timeout allows the display block to render before opacity transition starts
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            
+            // Re-bind hover listeners for new elements
+            updateHoverListeners();
+        }
+
+        function closeDownloadModal() {
+            const modal = document.getElementById('download-modal');
+            const content = document.getElementById('download-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+    </script>
+</body>
+</html>
